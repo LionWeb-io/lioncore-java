@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import io.lionweb.lioncore.java.BuildConfig;
 import io.lionweb.lioncore.java.api.ClassifierInstanceResolver;
 import io.lionweb.lioncore.java.api.CompositeClassifierInstanceResolver;
 import io.lionweb.lioncore.java.api.LocalClassifierInstanceResolver;
@@ -39,7 +40,14 @@ import javax.annotation.Nullable;
  * behavior explicitly by calling getNodeInstantiator().enableDynamicNodes().
  */
 public class JsonSerialization {
-  public static final String DEFAULT_SERIALIZATION_FORMAT = "2023.1";
+  public static final String DEFAULT_SERIALIZATION_FORMAT = BuildConfig.CURRENT_SPECS_VERSION;
+  public static final String SERIALIZATION_FORMAT_2023_1 = "2023.1";
+  public static final Set<String> SUPPORTED_FORMATS =
+      new HashSet<>(Arrays.asList(DEFAULT_SERIALIZATION_FORMAT, SERIALIZATION_FORMAT_2023_1));
+
+  public static boolean isFormatSupported(String format) {
+    return SUPPORTED_FORMATS.contains(format);
+  }
 
   public static void saveLanguageToFile(Language language, File file) throws IOException {
     String content = getStandardSerialization().serializeTreesToJsonString(language);
@@ -484,9 +492,11 @@ public class JsonSerialization {
   }
 
   private void validateSerializationBlock(SerializedChunk serializationBlock) {
-    if (!serializationBlock.getSerializationFormatVersion().equals(DEFAULT_SERIALIZATION_FORMAT)) {
+    if (!isFormatSupported(serializationBlock.getSerializationFormatVersion())) {
       throw new IllegalArgumentException(
-          "Only serializationFormatVersion = '" + DEFAULT_SERIALIZATION_FORMAT + "' is supported");
+          "Serialization format '"
+              + serializationBlock.getSerializationFormatVersion()
+              + "' is not supported");
     }
   }
 

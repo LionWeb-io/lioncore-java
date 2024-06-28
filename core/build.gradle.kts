@@ -5,8 +5,9 @@ plugins {
     id("java-library")
     id("signing")
     id("com.github.johnrengelman.shadow") version "7.1.1"
-    id("com.vanniktech.maven.publish")
+    alias(libs.plugins.superPublish)
     jacoco
+    alias(libs.plugins.buildConfig)
 }
 
 repositories {
@@ -185,4 +186,17 @@ val integrationTest = tasks.create("integrationTest", Test::class.java) {
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test) // tests are required to run before generating the report
+}
+
+buildConfig {
+    sourceSets.getByName("main") {
+        packageName("io.lionweb.lioncore.java")
+        buildConfigField("String", "CURRENT_SPECS_VERSION", "\"${specsVersion}\"")
+    }
+}
+
+spotless {
+    java {
+        target("src/**/*.java")
+    }
 }
